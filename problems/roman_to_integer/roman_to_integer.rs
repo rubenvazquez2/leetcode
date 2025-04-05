@@ -7,7 +7,6 @@ impl Solution {
     pub fn roman_to_int(&self, s: String) -> i32 {
         let mut i = 0;
         let mut val = 0;
-        let size = s.len();
 
         let mut roman_to_int_map = HashMap::new();
         roman_to_int_map.insert('I', 1);
@@ -18,49 +17,37 @@ impl Solution {
         roman_to_int_map.insert('D', 500);
         roman_to_int_map.insert('M', 1000);
 
-        while i < size {
-            let first_letter = s.chars().nth(i).unwrap();
-            if i == size-1 {
-                val = val + roman_to_int_map.get(&first_letter).unwrap();
-                break;
-            }
+        loop {
+            let first_letter = s.chars().nth(i);
             match first_letter {
-                'I' => {
-                    let second_letter = s.chars().nth(i+1).unwrap();
-                    if second_letter == 'V' || second_letter == 'X' {
-                        val = val + (roman_to_int_map.get(&second_letter).unwrap() - roman_to_int_map.get(&first_letter).unwrap());
-                        i = i + 1;
+                None => break,
+                Some(first_letter) => {
+                    let first_letter_val = roman_to_int_map.get(&first_letter);
+                    match first_letter_val {
+                        None => panic!("Unexpected first character {}", first_letter),
+                        Some(first_letter_val) => {
+                            i = i + 1;
+                            let second_letter = s.chars().nth(i);
+                            match second_letter {
+                                None => val = val + first_letter_val,
+                                Some(second_letter) => {
+                                    let second_letter_val = roman_to_int_map.get(&second_letter);
+                                    match second_letter_val {
+                                        None => panic!("Unexpected second character {}", second_letter),
+                                        Some(second_letter_val) => {
+                                            match (first_letter, second_letter) {
+                                                ('I', 'V' | 'X') | ('X', 'L' | 'C') | ('C', 'D' | 'M' ) => {
+                                                    val = val + (second_letter_val - first_letter_val);
+                                                    i = i + 1;
+                                                },
+                                                _ => val = val + first_letter_val,
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                    else {
-                        val = val + roman_to_int_map.get(&first_letter).unwrap();
-                    }
-                    i = i + 1;
-                },
-                'X' => {
-                    let second_letter = s.chars().nth(i+1).unwrap();
-                    if second_letter == 'L' || second_letter == 'C' {
-                        val = val + (roman_to_int_map.get(&second_letter).unwrap() - roman_to_int_map.get(&first_letter).unwrap());
-                        i = i + 1;
-                    }
-                    else {
-                        val = val + roman_to_int_map.get(&first_letter).unwrap();
-                    }
-                    i = i + 1;
-                },
-                'C' => {
-                    let second_letter = s.chars().nth(i+1).unwrap();
-                    if second_letter == 'D' || second_letter == 'M' {
-                        val = val + (roman_to_int_map.get(&second_letter).unwrap() - roman_to_int_map.get(&first_letter).unwrap());
-                        i = i + 1;
-                    }
-                    else {
-                        val = val + roman_to_int_map.get(&first_letter).unwrap();
-                    }
-                    i = i + 1;
-                },
-                _ => {
-                    val = val + roman_to_int_map.get(&first_letter).unwrap();
-                    i = i + 1;
                 }
             }
         }
@@ -70,5 +57,5 @@ impl Solution {
 
 fn main() {
     let solution = Solution {};
-    println!("{}", solution.roman_to_int(String::from("IV")));
+    println!("{}", solution.roman_to_int(String::from("MCMXCIV")));
 }
